@@ -138,6 +138,9 @@ func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName string, extr
 	}
 
 	for _, list := range lists {
+		for _, resource := range list.APIResources {
+			logrus.Infof("[DEBUG]: Checking specific resource: %s", resource.Name)
+		}
 		if len(list.APIResources) == 0 {
 			continue
 		}
