@@ -88,7 +88,7 @@ func (c *Cluster) generateSupportBundleYAMLs(yamlsDir string, errLog io.Writer) 
 	namespaces := []string{"default", "kube-system", "cattle-system"}
 	namespaces = append(namespaces, c.sbm.Namespaces...)
 
-	done := make(map[string]struct{})
+	/*done := make(map[string]struct{})
 	for _, namespace := range namespaces {
 		if _, ok := done[namespace]; ok {
 			continue
@@ -98,7 +98,7 @@ func (c *Cluster) generateSupportBundleYAMLs(yamlsDir string, errLog io.Writer) 
 		c.generateDiscoveredNamespacedYAMLs(namespace, namespacedDir, errLog)
 
 		done[namespace] = struct{}{}
-	}
+	}*/
 	for _, collector := range c.sbm.ExtraBundleCollectors {
 		switch collector {
 		case "Harvester":
