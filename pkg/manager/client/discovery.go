@@ -136,12 +136,30 @@ func toObj(b []byte, groupVersion, kind string) (interface{}, error) {
 func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName string, extraResources map[string][]string, errLog io.Writer) (map[string]interface{}, error) {
 	objs := make(map[string]interface{})
 
+	lists, err := dc.discoveryClient.ServerPreferredResources()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, list := range lists {
+		if len(list.APIResources) == 0 {
+			continue
+		}
+
+		for _, resource := range list.APIResources {
+			if !resource.Namespaced {
+				continue
+			}
+
+			logrus.Infof("[DEBUG_NS]: resource: %s\n", resource.Name)
+		}
+	}
+
 	//secrets := v1listers.NewSecretLister(secretsInformer.GetIndexer())
 	/*lists, err := dc.discoveryClient.ServerPreferredResources()
 	if err != nil {
 		return nil, err
 	}*/
-
 	url := fmt.Sprintf("/api/v1/namespaces/flee-local/secrets")
 
 	result := dc.discoveryClient.RESTClient().Get().AbsPath(url).Do(dc.Context)
@@ -163,6 +181,7 @@ func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName string, extr
 		}
 		objs["v1"+"/"+"secrets"] = obj
 	}
+
 	/*
 		for _, list := range lists {
 			if len(list.APIResources) == 0 {
@@ -267,9 +286,9 @@ func (dc *DiscoveryClient) ResourcesForNamespace(namespace string, exclude Exclu
 				prefix = "api"
 			}
 			url := fmt.Sprintf("/%s/%s/namespaces/%s/%s", prefix, gv.String(), namespace, resource.Name)
-			if namespace == "fleet-local" {
+			/*if namespace == "fleet-local" {
 				logrus.Infof("[DEBUG_NS]: resource: %s\n", resource.Name)
-			}
+			}*/
 
 			result := dc.discoveryClient.RESTClient().Get().AbsPath(url).Do(dc.Context)
 
