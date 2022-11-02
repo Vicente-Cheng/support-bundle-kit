@@ -44,8 +44,7 @@ func NewDiscoveryClient(ctx context.Context, config *rest.Config) (*DiscoveryCli
 	}, nil
 }
 
-func toObj(b []byte, groupVersion, kind string) (interface{}, error) {
-
+func toObjCommon(b []byte, groupVersion, kind string) (*gabs.Container, error) {
 	re := regexp.MustCompile(`("[a-zA-Z]+":)(null,)`)
 	replaceString := re.ReplaceAllString(string(b), "$1\"null\",")
 
@@ -91,8 +90,103 @@ func toObj(b []byte, groupVersion, kind string) (interface{}, error) {
 			}
 		}
 	}
+	return jsonParsed, nil
+}
+func toObjExtraModule(extraModule, resource string, b []byte, groupVersion, kind string) (interface{}, error) {
+	jsonParsed, err := toObjCommon(b, groupVersion, kind)
+	if err != nil {
+		return nil, err
+	}
+
+	switch extraModule {
+	case "Harvester":
+		if err := toObjHarvesterExtra(jsonParsed, resource); err != nil {
+			logrus.Error("Do extraParsed failure")
+		}
+	default:
+		// no extra parser here
+	}
+	return jsonParsed, nil
+}
+
+func toObjHarvesterExtra(jsonParsed *gabs.Container, resource string) error {
+	switch resource {
+	case "secret":
+		logrus.Infof("Prepare to extra parsring for `secret`\n")
+	default:
+		// undefined resource operation
+	}
+	return nil
+}
+
+func toObj(b []byte, groupVersion, kind string) (interface{}, error) {
+	jsonParsed, err := toObjCommon(b, groupVersion, kind)
+	if err != nil {
+		return nil, err
+	}
 
 	return jsonParsed.Data(), nil
+}
+
+// Get extra resource/namespace and try to do specific filter with module name
+func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName string, extraResources map[string][]string, errLog io.Writer) (map[string]interface{}, error) {
+	objs := make(map[string]interface{})
+
+	lists, err := dc.discoveryClient.ServerPreferredResources()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, list := range lists {
+		if len(list.APIResources) == 0 {
+			continue
+		}
+		gv, err := schema.ParseGroupVersion(list.GroupVersion)
+		if err != nil {
+			continue
+		}
+
+		for _, resource := range list.APIResources {
+			if !resource.Namespaced {
+				continue
+			}
+
+			if namespaceList, found := extraResources[resource.Name]; found {
+				for _, namespace := range namespaceList {
+					prefix := "apis"
+					if gv.String() == "v1" {
+						prefix = "api"
+					}
+
+					url := fmt.Sprintf("/%s/%s/namespaces/%s/%s", prefix, gv.String(), namespace, resource.Name)
+
+					result := dc.discoveryClient.RESTClient().Get().AbsPath(url).Do(dc.Context)
+
+					// It is likely that errors can occur.
+					if result.Error() != nil {
+						logrus.Tracef("Failed to get %s: %v", url, result.Error())
+						fmt.Fprintf(errLog, "Failed to get %s: %v\n", url, result.Error())
+						continue
+					}
+
+					// This produces a byte array of json.
+					b, err := result.Raw()
+
+					if err == nil {
+						obj, err := toObjExtraModule(moduleName, resource.Name, b, gv.String(), resource.Kind)
+						if err != nil {
+							return nil, err
+						}
+						objs[gv.String()+"/"+resource.Name] = obj
+					}
+				}
+			} else {
+				continue
+			}
+		}
+	}
+
+	return objs, nil
 }
 
 // Get all the namespaced resources for a given namespace

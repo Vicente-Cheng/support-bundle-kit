@@ -38,8 +38,9 @@ type SupportBundleManager struct {
 	PodNamespace    string
 	NodeSelector    string
 
-	ExcludeResources    []schema.GroupResource
-	ExcludeResourceList []string
+	ExcludeResources      []schema.GroupResource
+	ExcludeResourceList   []string
+	ExtraBundleCollectors []string
 
 	context context.Context
 
@@ -144,6 +145,7 @@ func (m *SupportBundleManager) Run() error {
 }
 
 func (m *SupportBundleManager) phaseInit() error {
+	m.ExtraBundleCollectors = []string{"Harvester"}
 	m.ExcludeResources = []schema.GroupResource{
 		// Default exclusion
 		{Group: v1.GroupName, Resource: "secrets"},
