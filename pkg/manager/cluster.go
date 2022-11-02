@@ -99,9 +99,37 @@ func (c *Cluster) generateSupportBundleYAMLs(yamlsDir string, errLog io.Writer) 
 
 		done[namespace] = struct{}{}
 	}
+	for _, collector := range c.sbm.ExtraBundleCollectors {
+		switch collector {
+		case "Harvester":
+			logrus.Infof("Prepare to collector extra Harvester yamls!")
+			c.generateHarvesterYAMLs(collector, yamlsDir, errLog)
+		default:
+			logrus.Infof("Not Supported collector: %s", collector)
+		}
+	}
 }
 
 type NamespacedGetter func(string) (runtime.Object, error)
+
+func (c *Cluster) generateHarvesterYAMLs(moduleName string, yamlsDir string, errLog io.Writer) {
+	extraResources := getHarvesterExtrResource()
+	for namespace, resourceLists := range extraResources {
+		dir := filepath.Join(yamlsDir, "namespaced", namespace)
+		objs, err := c.sbm.discovery.SpecificResourcesForNamespace(moduleName, namespace, resourceLists, errLog)
+
+		if err != nil {
+			logrus.Error("Unable to fetch namespaced resources")
+			return
+		}
+
+		for name, obj := range objs {
+			file := filepath.Join(dir, name+".yaml")
+			logrus.Debugf("Prepare to encode to yaml file path: %s", file)
+			encodeToYAMLFile(obj, file, errLog)
+		}
+	}
+}
 
 func (c *Cluster) generateDiscoveredNamespacedYAMLs(namespace string, dir string, errLog io.Writer) {
 	objs, err := c.sbm.discovery.ResourcesForNamespace(namespace, c.matchesExcludeResources, errLog)

@@ -38,8 +38,9 @@ type SupportBundleManager struct {
 	PodNamespace    string
 	NodeSelector    string
 
-	ExcludeResources    []schema.GroupResource
-	ExcludeResourceList []string
+	ExcludeResources      []schema.GroupResource
+	ExcludeResourceList   []string
+	ExtraBundleCollectors []string
 
 	context context.Context
 
@@ -153,6 +154,9 @@ func (m *SupportBundleManager) phaseInit() error {
 		if !gr.Empty() {
 			m.ExcludeResources = append(m.ExcludeResources, gr)
 		}
+	}
+	for _, collector := range m.ExtraBundleCollectors {
+		m.ExtraBundleCollectors = append(m.ExtraBundleCollectors, collector)
 	}
 	if err := m.check(); err != nil {
 		return err
