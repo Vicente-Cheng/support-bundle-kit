@@ -102,12 +102,14 @@ func (c *Cluster) generateSupportBundleYAMLs(yamlsDir string, errLog io.Writer) 
 	for _, collector := range c.sbm.ExtraBundleCollectors {
 		switch collector {
 		case "Harvester":
+			logrus.Infof("Prepare to collector extra Harvester yamls!")
 			c.generateHarvesterYAMLs(collector, yamlsDir, errLog)
 			return
 		default:
-			logrus.Warnf("Not Supported collector: %s", collector)
+			logrus.Infof("Not Supported collector: %s", collector)
 		}
 	}
+	logrus.Infof("[DEBUG] generateSupportBundle done!")
 }
 
 type NamespacedGetter func(string) (runtime.Object, error)
