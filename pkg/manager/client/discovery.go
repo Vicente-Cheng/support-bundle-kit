@@ -133,7 +133,8 @@ func toObj(b []byte, groupVersion, kind string) (interface{}, error) {
 }
 
 // Get extra resource/namespace and try to do specific filter with module name
-func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName string, extraResources map[string][]string, errLog io.Writer) (map[string]interface{}, error) {
+//func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName string, extraResources map[string][]string, errLog io.Writer) (map[string]interface{}, error) {
+func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName, namespace, targetResource string, errLog io.Writer) (map[string]interface{}, error) {
 	objs := make(map[string]interface{})
 
 	lists, err := dc.discoveryClient.ServerPreferredResources()
@@ -145,13 +146,30 @@ func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName string, extr
 		if len(list.APIResources) == 0 {
 			continue
 		}
+		gv, err := schema.ParseGroupVersion(list.GroupVersion)
+		if err != nil {
+			continue
+		}
 
 		for _, resource := range list.APIResources {
 			if !resource.Namespaced {
 				continue
 			}
 
-			logrus.Infof("[DEBUG_NS]: resource: %s\n", resource.Name)
+			// I would like to build the URL with rest client
+			// methods, but I was not able to.  It might be
+			// possible if a new rest client is created each
+			// time with the GroupVersion
+			prefix := "apis"
+			if gv.String() == "v1" {
+				prefix = "api"
+			}
+			url := fmt.Sprintf("/%s/%s/namespaces/%s/%s", prefix, gv.String(), namespace, resource.Name)
+			if namespace == "fleet-local" && resource.Name == "secrets" {
+				logrus.Infof("[DEBUG_NEW]: resource: %s", resource.Name)
+				logrus.Infof("[DEBUG_NEW]: url: %s", url)
+			}
+
 		}
 	}
 

@@ -116,7 +116,8 @@ type NamespacedGetter func(string) (runtime.Object, error)
 func (c *Cluster) generateHarvesterYAMLs(moduleName string, dir string, errLog io.Writer) {
 	//extraResources := getHarvesterExtrResource()
 	//objs, err := c.sbm.discovery.SpecificResourcesForNamespace(moduleName, extraResources, errLog)
-	objs, err := c.sbm.discovery.ResourcesForNamespace("fleet-local", c.matchesExcludeResources, errLog)
+	objs, err := c.sbm.discovery.SpecificResourcesForNamespace(moduleName, "fleet-local", "secrets", errLog)
+	//objs, err := c.sbm.discovery.ResourcesForNamespace("fleet-local", c.matchesExcludeResources, errLog)
 
 	if err != nil {
 		logrus.Error("Unable to fetch namespaced resources")
