@@ -132,75 +132,98 @@ func toObj(b []byte, groupVersion, kind string) (interface{}, error) {
 func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName string, extraResources map[string][]string, errLog io.Writer) (map[string]interface{}, error) {
 	objs := make(map[string]interface{})
 
-	_, lists, err := dc.discoveryClient.ServerGroupsAndResources()
+	//secrets := v1listers.NewSecretLister(secretsInformer.GetIndexer())
+	lists, err := dc.discoveryClient.ServerPreferredResources()
 	if err != nil {
 		return nil, err
 	}
 
-	for _, list := range lists {
-		if len(list.APIResources) == 0 {
-			continue
-		}
-		gv, err := schema.ParseGroupVersion(list.GroupVersion)
-		if err != nil {
-			continue
-		}
+	url := fmt.Sprintf("/api/v1/namespaces/flee-local/secrets")
 
-		for _, resource := range list.APIResources {
-			logrus.Infof("[DEBUG]: prepare to checking specific resource: %s", resource.Name)
+	result := dc.discoveryClient.RESTClient().Get().AbsPath(url).Do(dc.Context)
 
-			url := fmt.Sprintf("/api/v1/namespaces/flee-local/secrets")
-
-			result := dc.discoveryClient.RESTClient().Get().AbsPath(url).Do(dc.Context)
-
-			// It is likely that errors can occur.
-			if result.Error() != nil {
-				logrus.Infof("[SECRETS_DEBUG]: get url %s failure\n", url)
-				logrus.Tracef("Failed to get %s: %v", url, result.Error())
-				fmt.Fprintf(errLog, "Failed to get %s: %v\n", url, result.Error())
-			}
-			logrus.Infof("[SECRETS_DEBUG]: Get secret good!\n")
-
-			if !resource.Namespaced {
-				continue
-			}
-
-			if namespaceList, found := extraResources[resource.Name]; found {
-				logrus.Infof("[DEBUG]: found!, resource: %s, NS: %v", resource.Name, namespaceList)
-				for _, namespace := range namespaceList {
-					prefix := "apis"
-					if gv.String() == "v1" {
-						prefix = "api"
-					}
-
-					url := fmt.Sprintf("/%s/%s/namespaces/%s/%s", prefix, gv.String(), namespace, resource.Name)
-
-					result := dc.discoveryClient.RESTClient().Get().AbsPath(url).Do(dc.Context)
-
-					// It is likely that errors can occur.
-					if result.Error() != nil {
-						logrus.Tracef("Failed to get %s: %v", url, result.Error())
-						fmt.Fprintf(errLog, "Failed to get %s: %v\n", url, result.Error())
-						continue
-					}
-
-					// This produces a byte array of json.
-					b, err := result.Raw()
-
-					if err == nil {
-						obj, err := toObjExtraModule(moduleName, resource.Name, b, gv.String(), resource.Kind)
-						if err != nil {
-							return nil, err
-						}
-						objs[gv.String()+"/"+resource.Name] = obj
-					}
-				}
-			} else {
-				continue
-			}
-		}
+	// It is likely that errors can occur.
+	if result.Error() != nil {
+		logrus.Infof("[SECRETS_DEBUG]: get url %s failure\n", url)
+		logrus.Tracef("Failed to get %s: %v", url, result.Error())
+		fmt.Fprintf(errLog, "Failed to get %s: %v\n", url, result.Error())
 	}
+	logrus.Infof("[SECRETS_DEBUG]: Get secret good!\n")
 
+	b, err := result.Raw()
+
+	if err == nil {
+		obj, err := toObjExtraModule(moduleName, "secrets", b, "v1", "Secret")
+		if err != nil {
+			return nil, err
+		}
+		objs["v1"+"/"+"secrets"] = obj
+	}
+	/*
+		for _, list := range lists {
+			if len(list.APIResources) == 0 {
+				continue
+			}
+			gv, err := schema.ParseGroupVersion(list.GroupVersion)
+			if err != nil {
+				continue
+			}
+
+			for _, resource := range list.APIResources {
+				logrus.Infof("[DEBUG]: prepare to checking specific resource: %s", resource.Name)
+
+				url := fmt.Sprintf("/api/v1/namespaces/flee-local/secrets")
+
+				result := dc.discoveryClient.RESTClient().Get().AbsPath(url).Do(dc.Context)
+
+				// It is likely that errors can occur.
+				if result.Error() != nil {
+					logrus.Infof("[SECRETS_DEBUG]: get url %s failure\n", url)
+					logrus.Tracef("Failed to get %s: %v", url, result.Error())
+					fmt.Fprintf(errLog, "Failed to get %s: %v\n", url, result.Error())
+				}
+				logrus.Infof("[SECRETS_DEBUG]: Get secret good!\n")
+
+				if !resource.Namespaced {
+					continue
+				}
+
+				if namespaceList, found := extraResources[resource.Name]; found {
+					logrus.Infof("[DEBUG]: found!, resource: %s, NS: %v", resource.Name, namespaceList)
+					for _, namespace := range namespaceList {
+						prefix := "apis"
+						if gv.String() == "v1" {
+							prefix = "api"
+						}
+
+						url := fmt.Sprintf("/%s/%s/namespaces/%s/%s", prefix, gv.String(), namespace, resource.Name)
+
+						result := dc.discoveryClient.RESTClient().Get().AbsPath(url).Do(dc.Context)
+
+						// It is likely that errors can occur.
+						if result.Error() != nil {
+							logrus.Tracef("Failed to get %s: %v", url, result.Error())
+							fmt.Fprintf(errLog, "Failed to get %s: %v\n", url, result.Error())
+							continue
+						}
+
+						// This produces a byte array of json.
+						b, err := result.Raw()
+
+						if err == nil {
+							obj, err := toObjExtraModule(moduleName, resource.Name, b, gv.String(), resource.Kind)
+							if err != nil {
+								return nil, err
+							}
+							objs[gv.String()+"/"+resource.Name] = obj
+						}
+					}
+				} else {
+					continue
+				}
+			}
+		}
+	*/
 	return objs, nil
 }
 
