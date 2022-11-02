@@ -133,10 +133,10 @@ func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName string, extr
 	objs := make(map[string]interface{})
 
 	//secrets := v1listers.NewSecretLister(secretsInformer.GetIndexer())
-	lists, err := dc.discoveryClient.ServerPreferredResources()
+	/*lists, err := dc.discoveryClient.ServerPreferredResources()
 	if err != nil {
 		return nil, err
-	}
+	}*/
 
 	url := fmt.Sprintf("/api/v1/namespaces/flee-local/secrets")
 
