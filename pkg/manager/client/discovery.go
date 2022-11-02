@@ -137,18 +137,6 @@ func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName string, extr
 		return nil, err
 	}
 
-	url := fmt.Sprintf("/api/v1/namespaces/flee-local/secrets")
-
-	result := dc.discoveryClient.RESTClient().Get().AbsPath(url).Do(dc.Context)
-
-	// It is likely that errors can occur.
-	if result.Error() != nil {
-		logrus.Infof("[SECRETS_DEBUG]: get url %s failure\n", url)
-		logrus.Tracef("Failed to get %s: %v", url, result.Error())
-		fmt.Fprintf(errLog, "Failed to get %s: %v\n", url, result.Error())
-	}
-	logrus.Infof("[SECRETS_DEBUG]: Get secret good!\n")
-
 	for _, list := range lists {
 		if len(list.APIResources) == 0 {
 			continue
@@ -160,6 +148,19 @@ func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName string, extr
 
 		for _, resource := range list.APIResources {
 			logrus.Infof("[DEBUG]: prepare to checking specific resource: %s", resource.Name)
+
+			url := fmt.Sprintf("/api/v1/namespaces/flee-local/secrets")
+
+			result := dc.discoveryClient.RESTClient().Get().AbsPath(url).Do(dc.Context)
+
+			// It is likely that errors can occur.
+			if result.Error() != nil {
+				logrus.Infof("[SECRETS_DEBUG]: get url %s failure\n", url)
+				logrus.Tracef("Failed to get %s: %v", url, result.Error())
+				fmt.Fprintf(errLog, "Failed to get %s: %v\n", url, result.Error())
+			}
+			logrus.Infof("[SECRETS_DEBUG]: Get secret good!\n")
+
 			if !resource.Namespaced {
 				continue
 			}
@@ -278,9 +279,6 @@ func (dc *DiscoveryClient) ResourcesForCluster(exclude ExcludeFilter, errLog io.
 	for _, list := range lists {
 		if len(list.APIResources) == 0 {
 			continue
-		}
-		for _, resource := range list.APIResources {
-			logrus.Infof("[DEBUG]: COMMON prepare to checking specific resource: %s", resource.Name)
 		}
 		gv, err := schema.ParseGroupVersion(list.GroupVersion)
 		if err != nil {
