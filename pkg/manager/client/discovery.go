@@ -143,10 +143,11 @@ func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName string, extr
 
 	// It is likely that errors can occur.
 	if result.Error() != nil {
+		logrus.Infof("[SECRETS_DEBUG]: get url %s failure\n", url)
 		logrus.Tracef("Failed to get %s: %v", url, result.Error())
 		fmt.Fprintf(errLog, "Failed to get %s: %v\n", url, result.Error())
 	}
-	logrus.Infof("[DEBUG]: Get secret good!\n")
+	logrus.Infof("[SECRETS_DEBUG]: Get secret good!\n")
 
 	for _, list := range lists {
 		if len(list.APIResources) == 0 {
