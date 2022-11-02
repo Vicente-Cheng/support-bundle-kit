@@ -4,6 +4,6 @@ package manager
 func getHarvesterExtrResource() map[string][]string {
 	extraResource := make(map[string][]string)
 
-	extraResource["secret"] = []string{"fleet-local"}
+	extraResource["secrets"] = []string{"fleet-local"}
 	return extraResource
 }
