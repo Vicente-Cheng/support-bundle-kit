@@ -147,10 +147,10 @@ func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName string, extr
 		}
 
 		for _, resource := range list.APIResources {
+			logrus.Infof("[DEBUG]: prepare to checking specific resource: %s", resource.Name)
 			if !resource.Namespaced {
 				continue
 			}
-			logrus.Infof("[DEBUG]: prepare to checking specific resource...")
 
 			if namespaceList, found := extraResources[resource.Name]; found {
 				logrus.Infof("[DEBUG]: found!, resource: %s, NS: %v", resource.Name, namespaceList)
