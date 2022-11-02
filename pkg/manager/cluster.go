@@ -139,6 +139,7 @@ func (c *Cluster) generateDiscoveredNamespacedYAMLs(namespace string, dir string
 
 	for name, obj := range objs {
 		file := filepath.Join(dir, name+".yaml")
+		logrus.Infof("[DEBUG_DEFAULT] Add file: %s (dir: %s, name: %s)", file, dir, name)
 		encodeToYAMLFile(obj, file, errLog)
 	}
 }

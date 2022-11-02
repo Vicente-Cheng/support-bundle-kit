@@ -112,6 +112,7 @@ func toObjExtraModule(extraModule, resource string, b []byte, groupVersion, kind
 func toObjHarvesterExtra(jsonParsed *gabs.Container, resource string) error {
 	switch resource {
 	case "secrets":
+		logrus.Info("%v\n", jsonParsed)
 		for _, child := range jsonParsed.S("items").Children() {
 			logrus.Infof("[DEBUG_PARSER]: %v\n", child)
 		}
