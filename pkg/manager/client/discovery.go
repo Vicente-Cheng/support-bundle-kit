@@ -286,9 +286,9 @@ func (dc *DiscoveryClient) ResourcesForNamespace(namespace string, exclude Exclu
 				prefix = "api"
 			}
 			url := fmt.Sprintf("/%s/%s/namespaces/%s/%s", prefix, gv.String(), namespace, resource.Name)
-			/*if namespace == "fleet-local" {
-				logrus.Infof("[DEBUG_NS]: resource: %s\n", resource.Name)
-			}*/
+			if namespace == "fleet-local" && resource.Name == "secrets" {
+				logrus.Infof("[DEBUG_NS]: resource: %s", resource.Name)
+			}
 
 			result := dc.discoveryClient.RESTClient().Get().AbsPath(url).Do(dc.Context)
 
