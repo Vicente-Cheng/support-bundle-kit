@@ -132,7 +132,7 @@ func toObj(b []byte, groupVersion, kind string) (interface{}, error) {
 func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName string, extraResources map[string][]string, errLog io.Writer) (map[string]interface{}, error) {
 	objs := make(map[string]interface{})
 
-	lists, err := dc.discoveryClient.ServerPreferredResources()
+	_, lists, err := dc.discoveryClient.ServerGroupsAndResources()
 	if err != nil {
 		return nil, err
 	}
