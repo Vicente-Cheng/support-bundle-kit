@@ -116,6 +116,7 @@ func toObjHarvesterExtra(jsonParsed *gabs.Container, resource string) (*gabs.Con
 	finalJsonParsed := gabs.New()
 	switch resource {
 	case "secrets":
+		logrus.Infof("[DEBUG] pre-parsed result: %v", jsonParsed)
 		/*newItems, _ := jsonParsed.S("item").Children().Data().([]interface{})
 		logrus.Infof("[DEBUG_ITEM]: items: %v", newItems)
 		for _, item := range newItems {
@@ -131,11 +132,12 @@ func toObjHarvesterExtra(jsonParsed *gabs.Container, resource string) (*gabs.Con
 				finalJsonParsed.Merge(child)
 			}
 		}
-		logrus.Infof("[DEBUG] parsed result: %v", finalJsonParsed)
+		//logrus.Infof("[DEBUG] parsed result: %v", finalJsonParsed)
 	default:
 		// undefined resource operation
 	}
-	return finalJsonParsed, nil
+	logrus.Infof("[DEBUG] parsed result: %v", finalJsonParsed)
+	return jsonParsed, nil
 }
 
 func toObj(b []byte, groupVersion, kind string) (interface{}, error) {
