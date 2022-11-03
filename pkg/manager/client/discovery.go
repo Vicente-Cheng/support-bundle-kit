@@ -115,8 +115,10 @@ func toObjHarvesterExtra(jsonParsed *gabs.Container, resource string) error {
 		for _, child := range jsonParsed.S("items").Children() {
 			if find := child.S("type").Data().(string) == "rke.cattle.io/machine-plan"; find {
 				logrus.Infof("[DEBUG_PARSER]: find!!")
+				continue
 			}
-			logrus.Infof("[DEBUG_PARSER]: %s", child.S("type").Data().(string))
+			child.DeleteP(".")
+			logrus.Infof("[DEBUG_PARSER]: %v", child)
 		}
 		logrus.Infof("Prepare to extra parsring for `secrets`\n")
 	default:
