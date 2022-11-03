@@ -100,20 +100,18 @@ func toObjExtraModule(extraModule, resource string, b []byte, groupVersion, kind
 
 	switch extraModule {
 	case "Harvester":
-		finalJsonParsed, err := toObjHarvesterExtra(jsonParsed, resource)
-		if err != nil {
+		if err := toObjHarvesterExtra(jsonParsed, resource); err != nil {
 			logrus.Error("Do extraParsed failure")
 			return nil, err
 		}
-		return finalJsonParsed.Data(), nil
 	default:
 		// no extra parser here
 	}
 	return jsonParsed.Data(), nil
 }
 
-func toObjHarvesterExtra(jsonParsed *gabs.Container, resource string) (*gabs.Container, error) {
-	finalJsonParsed := gabs.New()
+func toObjHarvesterExtra(jsonParsed *gabs.Container, resource string) error {
+	//finalJsonParsed := gabs.New()
 	switch resource {
 	case "secrets":
 		//logrus.Infof("[DEBUG] pre-parsed result: %v", jsonParsed)
@@ -131,19 +129,19 @@ func toObjHarvesterExtra(jsonParsed *gabs.Container, resource string) (*gabs.Con
 		jsonParsed.Set(newItems, "items")
 
 		logrus.Infof("[DEBUG_PARSER]: jsonParsed: %v", jsonParsed.S("items").Data().(([]interface{})))
-		finalJsonParsed := gabs.New()
+		/*finalJsonParsed := gabs.New()
 		for _, child := range jsonParsed.S("items").Children() {
 			if find := child.S("type").Data().(string) == "rke.cattle.io/machine-plan"; find {
 				logrus.Infof("[DEBUG_PARSER]: child: %v", child.Data().(map[string]interface{}))
 				finalJsonParsed.Merge(child)
 			}
-		}
+		}*/
 		//logrus.Infof("[DEBUG] parsed result: %v", finalJsonParsed)
 	default:
 		// undefined resource operation
 	}
-	logrus.Infof("[DEBUG] parsed result: %v", finalJsonParsed)
-	return jsonParsed, nil
+	//logrus.Infof("[DEBUG] parsed result: %v", finalJsonParsed)
+	return nil
 }
 
 func toObj(b []byte, groupVersion, kind string) (interface{}, error) {
