@@ -114,7 +114,7 @@ func toObjHarvesterExtra(jsonParsed *gabs.Container, resource string) error {
 	case "secrets":
 		logrus.Info("%v\n", jsonParsed)
 		for _, child := range jsonParsed.S("items").Children() {
-			logrus.Infof("[DEBUG_PARSER]: %v\n", child)
+			logrus.Infof("[DEBUG_PARSER]: %v\n", child.S("type"))
 		}
 		logrus.Infof("Prepare to extra parsring for `secrets`\n")
 	default:
@@ -133,7 +133,6 @@ func toObj(b []byte, groupVersion, kind string) (interface{}, error) {
 }
 
 // Get extra resource/namespace and try to do specific filter with module name
-//func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName string, extraResources map[string][]string, errLog io.Writer) (map[string]interface{}, error) {
 func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName, namespace string, targetResource []string, errLog io.Writer) (map[string]interface{}, error) {
 
 	// If we upgrade to golang v1.18, use slice.contain to replcae checing
@@ -175,7 +174,6 @@ func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName, namespace s
 				prefix = "api"
 			}
 			url := fmt.Sprintf("/%s/%s/namespaces/%s/%s", prefix, gv.String(), namespace, resource.Name)
-			logrus.Infof("[DEBUG_NEW]: resource: %s", resource.Name)
 			logrus.Infof("[DEBUG_NEW]: url: %s", url)
 
 			result := dc.discoveryClient.RESTClient().Get().AbsPath(url).Do(dc.Context)
@@ -201,33 +199,6 @@ func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName, namespace s
 
 		}
 	}
-
-	//secrets := v1listers.NewSecretLister(secretsInformer.GetIndexer())
-	/*lists, err := dc.discoveryClient.ServerPreferredResources()
-	if err != nil {
-		return nil, err
-	}*/
-	/*url := fmt.Sprintf("/api/v1/namespaces/flee-local/secrets")
-
-	result := dc.discoveryClient.RESTClient().Get().AbsPath(url).Do(dc.Context)
-
-	// It is likely that errors can occur.
-	if result.Error() != nil {
-		logrus.Infof("[SECRETS_DEBUG]: get url %s failure\n", url)
-		logrus.Tracef("Failed to get %s: %v", url, result.Error())
-		fmt.Fprintf(errLog, "Failed to get %s: %v\n", url, result.Error())
-	}
-	logrus.Infof("[SECRETS_DEBUG]: Get secret good!\n")
-
-	b, err := result.Raw()
-
-	if err == nil {
-		obj, err := toObjExtraModule(moduleName, "secrets", b, "v1", "Secret")
-		if err != nil {
-			return nil, err
-		}
-		objs["v1"+"/"+"secrets"] = obj
-	}*/
 
 	return objs, nil
 }
