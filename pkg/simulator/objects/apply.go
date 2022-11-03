@@ -162,6 +162,7 @@ func (o *ObjectManager) ApplyObjects(objs []runtime.Object, patchStatus bool, sk
 			if apierrors.IsNotFound(err) {
 				resp, err = dr.Create(o.ctx, unstructuredObj, metav1.CreateOptions{})
 				if err != nil {
+					logrus.Errorf("[DEBUG]: err: %v", err)
 					logrus.Errorf("error during creation of resource %s with gvr %s", unstructuredObj.GetName(), restMapping.Resource.String())
 					logrus.Error(unstructuredObj.Object)
 					o.addToFailedObjects(unstructuredObj, err)
