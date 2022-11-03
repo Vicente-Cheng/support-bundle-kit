@@ -113,22 +113,37 @@ func (c *Cluster) generateSupportBundleYAMLs(yamlsDir string, errLog io.Writer) 
 
 type NamespacedGetter func(string) (runtime.Object, error)
 
-func (c *Cluster) generateHarvesterYAMLs(moduleName string, dir string, errLog io.Writer) {
-	//extraResources := getHarvesterExtrResource()
-	//objs, err := c.sbm.discovery.SpecificResourcesForNamespace(moduleName, extraResources, errLog)
-	objs, err := c.sbm.discovery.SpecificResourcesForNamespace(moduleName, "fleet-local", "secrets", errLog)
-	//objs, err := c.sbm.discovery.ResourcesForNamespace("fleet-local", c.matchesExcludeResources, errLog)
+func (c *Cluster) generateHarvesterYAMLs(moduleName string, yamlsDir string, errLog io.Writer) {
+	extraResources := getHarvesterExtrResource()
+	for namespace, resourceLists := range extraResources {
+		dir := filepath.Join(yamlsDir, "namespaced", namespace)
+		objs, err := c.sbm.discovery.SpecificResourcesForNamespace(moduleName, namespace, resourceLists, errLog)
 
-	if err != nil {
-		logrus.Error("Unable to fetch namespaced resources")
-		return
-	}
+		if err != nil {
+			logrus.Error("Unable to fetch namespaced resources")
+			return
+		}
 
-	for name, obj := range objs {
-		file := filepath.Join(dir, name+".yaml")
-		logrus.Infof("[DEBUG] Add file: %s (dir: %s, name: %s)", file, dir, name)
-		encodeToYAMLFile(obj, file, errLog)
-	}
+		for name, obj := range objs {
+			file := filepath.Join(dir, name+".yaml")
+			logrus.Infof("[DEBUG_DEFAULT] Add file: %s (dir: %s, name: %s)", file, dir, name)
+			encodeToYAMLFile(obj, file, errLog)
+		}
+	} /*
+		//objs, err := c.sbm.discovery.SpecificResourcesForNamespace(moduleName, extraResources, errLog)
+		objs, err := c.sbm.discovery.SpecificResourcesForNamespace(moduleName, "fleet-local", "secrets", errLog)
+		//objs, err := c.sbm.discovery.ResourcesForNamespace("fleet-local", c.matchesExcludeResources, errLog)
+
+		if err != nil {
+			logrus.Error("Unable to fetch namespaced resources")
+			return
+		}
+
+		for name, obj := range objs {
+			file := filepath.Join(dir, name+".yaml")
+			logrus.Infof("[DEBUG] Add file: %s (dir: %s, name: %s)", file, dir, name)
+			encodeToYAMLFile(obj, file, errLog)
+		}*/
 }
 
 func (c *Cluster) generateDiscoveredNamespacedYAMLs(namespace string, dir string, errLog io.Writer) {

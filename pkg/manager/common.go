@@ -1,9 +1,10 @@
 package manager
 
-/* return map(<resource>: [namespace]) */
+/* return map(<namespace>: [resource]) */
 func getHarvesterExtrResource() map[string][]string {
-	extraResource := make(map[string][]string)
+	extraResources := make(map[string][]string)
 
-	extraResource["secrets"] = []string{"fleet-local"}
-	return extraResource
+	//extraResource["secrets"] = []string{"fleet-local"}
+	extraResources["fleet-local"] = []string{"secrets"}
+	return extraResources
 }
