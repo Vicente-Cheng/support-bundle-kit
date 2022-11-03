@@ -117,15 +117,19 @@ func toObjHarvesterExtra(jsonParsed *gabs.Container, resource string) (*gabs.Con
 	switch resource {
 	case "secrets":
 		//logrus.Infof("[DEBUG] pre-parsed result: %v", jsonParsed)
-		newItems, _ := jsonParsed.S("items").Data().([]interface{})
-		logrus.Infof("[DEBUG_ITEM]: items: %v", newItems)
-		for _, item := range newItems {
+		currentItems, _ := jsonParsed.S("items").Data().([]interface{})
+		logrus.Infof("[DEBUG_ITEM]: items: %v", currentItems)
+		var newItems []interface{}
+		for _, item := range currentItems {
 			var gItem *gabs.Container
 			gItem = gabs.Wrap(item)
 			if find := gItem.S("type").Data().(string) == "rke.cattle.io/machine-plan"; find {
 				logrus.Infof("[DEBUG_ITEM]: item: %v", gItem.Data().(map[string]interface{}))
+				newItems = append(newItems, item)
 			}
 		}
+		jsonParsed.Set(newItems, "items")
+
 		logrus.Infof("[DEBUG_PARSER]: jsonParsed: %v", jsonParsed.S("items").Data().(([]interface{})))
 		finalJsonParsed := gabs.New()
 		for _, child := range jsonParsed.S("items").Children() {
