@@ -3,6 +3,8 @@ package objects
 import (
 	"context"
 	"fmt"
+	"time"
+
 	supportbundlekit "github.com/rancher/support-bundle-kit/pkg/simulator/apis/supportbundlekit.io/v1"
 	wranglerunstructured "github.com/rancher/wrangler/pkg/unstructured"
 	"github.com/sirupsen/logrus"
@@ -19,7 +21,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
-	"time"
 )
 
 type ObjectManager struct {
@@ -138,7 +139,7 @@ func (o *ObjectManager) ApplyObjects(objs []runtime.Object, patchStatus bool, sk
 		//GVK specific cleanup needed before objects can be created
 		err = objectHousekeeping(unstructuredObj)
 		if err != nil {
-			return fmt.Errorf("error during housekeeping on objects %v", err)
+			return fmt.Errorf("error %v during housekeeping on objects %v", err, unstructuredObj)
 		}
 
 		restMapping, err := findGVR(v.GetObjectKind().GroupVersionKind(), o.config)
