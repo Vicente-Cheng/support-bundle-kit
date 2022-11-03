@@ -139,7 +139,7 @@ func (o *ObjectManager) ApplyObjects(objs []runtime.Object, patchStatus bool, sk
 		//GVK specific cleanup needed before objects can be created
 		err = objectHousekeeping(unstructuredObj)
 		if err != nil {
-			return fmt.Errorf("error %v during housekeeping on objects %v", err, unstructuredObj)
+			return fmt.Errorf("error during housekeeping on objects %v, error: %v", err, unstructuredObj)
 		}
 
 		restMapping, err := findGVR(v.GetObjectKind().GroupVersionKind(), o.config)
@@ -209,6 +209,7 @@ func objectHousekeeping(obj *unstructured.Unstructured) error {
 	// this will be added as an annotation
 	annotations, ok, err := unstructured.NestedStringMap(obj.Object, "metadata", "annotations")
 	if err != nil {
+		logrus.Infof("Fail here...")
 		return err
 	}
 	if !ok {
@@ -217,6 +218,7 @@ func objectHousekeeping(obj *unstructured.Unstructured) error {
 
 	metadataMap, ok, err := unstructured.NestedMap(obj.Object, "metadata")
 	if err != nil {
+		logrus.Infof("Fail here #2...")
 		return err
 	}
 
@@ -227,6 +229,7 @@ func objectHousekeeping(obj *unstructured.Unstructured) error {
 			unstructured.RemoveNestedField(obj.Object, "metadata", "resourceVersion")
 			err = unstructured.SetNestedStringMap(obj.Object, annotations, "metadata", "annotations")
 			if err != nil {
+				logrus.Infof("Fail here #3...")
 				return err
 			}
 		}
