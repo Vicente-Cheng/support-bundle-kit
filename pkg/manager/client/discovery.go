@@ -102,6 +102,7 @@ func toObjExtraModule(extraModule, resource string, b []byte, groupVersion, kind
 	case "Harvester":
 		if err := toObjHarvesterExtra(jsonParsed, resource); err != nil {
 			logrus.Error("Do extraParsed failure")
+			return nil, err
 		}
 	default:
 		// no extra parser here
@@ -112,14 +113,20 @@ func toObjExtraModule(extraModule, resource string, b []byte, groupVersion, kind
 func toObjHarvesterExtra(jsonParsed *gabs.Container, resource string) error {
 	switch resource {
 	case "secrets":
-		for _, child := range jsonParsed.S("items").Children() {
+		newItems, _ := jsonParsed.S("item").Data().([]interface{})
+		for _, item := range newItems {
+			var gItem *gabs.Container
+			gItem = gabs.Wrap(item)
+
+			logrus.Infof("[DEBUG_ITEM]: item: %s", gItem.S("type").Data().(string))
+		}
+
+		/*for _, child := range jsonParsed.S("items").Children() {
 			if find := child.S("type").Data().(string) == "rke.cattle.io/machine-plan"; find {
 				logrus.Infof("[DEBUG_PARSER]: find!!")
-				continue
+				newItems = append(newItems, child)
 			}
-			child.Delete()
-			logrus.Infof("[DEBUG_PARSER]: %v", child)
-		}
+		}*/
 		logrus.Infof("[DEBUG] parsed result: %v", jsonParsed)
 	default:
 		// undefined resource operation
