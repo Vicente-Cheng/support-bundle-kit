@@ -114,6 +114,7 @@ func toObjHarvesterExtra(jsonParsed *gabs.Container, resource string) error {
 	switch resource {
 	case "secrets":
 		newItems, _ := jsonParsed.S("item").Data().([]interface{})
+		logrus.Infof("[DEBUG_ITEM]: items: %v", newItems)
 		for _, item := range newItems {
 			var gItem *gabs.Container
 			gItem = gabs.Wrap(item)
