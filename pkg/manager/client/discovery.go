@@ -178,6 +178,27 @@ func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName, namespace s
 			logrus.Infof("[DEBUG_NEW]: resource: %s", resource.Name)
 			logrus.Infof("[DEBUG_NEW]: url: %s", url)
 
+			result := dc.discoveryClient.RESTClient().Get().AbsPath(url).Do(dc.Context)
+
+			// It is likely that errors can occur.
+			if result.Error() != nil {
+				logrus.Tracef("Failed to get %s: %v", url, result.Error())
+				fmt.Fprintf(errLog, "Failed to get %s: %v\n", url, result.Error())
+				continue
+			}
+
+			// This produces a byte array of json.
+			b, err := result.Raw()
+
+			if err == nil {
+				obj, err := toObjExtraModule(moduleName, resource.Name, b, gv.String(), resource.Kind)
+				//obj, err := toObj(b, gv.String(), resource.Kind)
+				if err != nil {
+					return nil, err
+				}
+				objs[gv.String()+"/"+resource.Name] = obj
+			}
+
 		}
 	}
 
@@ -186,7 +207,7 @@ func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName, namespace s
 	if err != nil {
 		return nil, err
 	}*/
-	url := fmt.Sprintf("/api/v1/namespaces/flee-local/secrets")
+	/*url := fmt.Sprintf("/api/v1/namespaces/flee-local/secrets")
 
 	result := dc.discoveryClient.RESTClient().Get().AbsPath(url).Do(dc.Context)
 
@@ -206,7 +227,7 @@ func (dc *DiscoveryClient) SpecificResourcesForNamespace(moduleName, namespace s
 			return nil, err
 		}
 		objs["v1"+"/"+"secrets"] = obj
-	}
+	}*/
 
 	return objs, nil
 }
@@ -247,9 +268,6 @@ func (dc *DiscoveryClient) ResourcesForNamespace(namespace string, exclude Exclu
 				prefix = "api"
 			}
 			url := fmt.Sprintf("/%s/%s/namespaces/%s/%s", prefix, gv.String(), namespace, resource.Name)
-			if namespace == "fleet-local" && resource.Name == "secrets" {
-				logrus.Infof("[DEBUG_NS]: resource: %s", resource.Name)
-			}
 
 			result := dc.discoveryClient.RESTClient().Get().AbsPath(url).Do(dc.Context)
 
