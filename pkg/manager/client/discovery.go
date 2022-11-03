@@ -83,7 +83,8 @@ func toObjCommon(b []byte, groupVersion, kind string) (*gabs.Container, error) {
 	if kind == "Secret" {
 		for _, child := range jsonParsed.S("items").Children() {
 			if exists := child.Exists("data"); exists {
-				_, err := child.SetP("", "data")
+				var emptyData interface{}
+				_, err := child.SetP(emptyData, "data")
 				if err != nil {
 					logrus.Error("Unable to clear data section")
 				}
