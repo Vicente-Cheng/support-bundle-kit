@@ -117,10 +117,10 @@ func toObjHarvesterExtra(jsonParsed *gabs.Container, resource string) error {
 				logrus.Infof("[DEBUG_PARSER]: find!!")
 				continue
 			}
-			child.DeleteP(".")
+			child.Delete()
 			logrus.Infof("[DEBUG_PARSER]: %v", child)
 		}
-		logrus.Infof("Prepare to extra parsring for `secrets`\n")
+		logrus.Infof("[DEBUG] parsed result: %v", jsonParsed)
 	default:
 		// undefined resource operation
 	}
