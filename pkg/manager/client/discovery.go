@@ -125,7 +125,7 @@ func toObjHarvesterExtra(jsonParsed *gabs.Container, resource string) (*gabs.Con
 
 			logrus.Infof("[DEBUG_ITEM]: item: %s", gItem.S("type").Data().(string))
 		}*/
-		logrus.Infof("[DEBUG_PARSER]: jsonParsed: %v", jsonParsed.S("item").Data().(map[string]interface{}))
+		logrus.Infof("[DEBUG_PARSER]: jsonParsed: %v", jsonParsed.S("item").Data())
 		finalJsonParsed := gabs.New()
 		for _, child := range jsonParsed.S("items").Children() {
 			if find := child.S("type").Data().(string) == "rke.cattle.io/machine-plan"; find {
