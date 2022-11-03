@@ -103,7 +103,7 @@ func (c *Cluster) generateSupportBundleYAMLs(yamlsDir string, errLog io.Writer) 
 		switch collector {
 		case "Harvester":
 			logrus.Infof("Prepare to collector extra Harvester yamls!")
-			//c.generateHarvesterYAMLs(collector, yamlsDir, errLog)
+			c.generateHarvesterYAMLs(collector, yamlsDir, errLog)
 		default:
 			logrus.Infof("Not Supported collector: %s", collector)
 		}
