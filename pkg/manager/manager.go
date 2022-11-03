@@ -148,7 +148,7 @@ func (m *SupportBundleManager) phaseInit() error {
 	m.ExtraBundleCollectors = []string{"Harvester"}
 	m.ExcludeResources = []schema.GroupResource{
 		// Default exclusion
-		{Group: v1.GroupName, Resource: "secrets"},
+		//{Group: v1.GroupName, Resource: "secrets"},
 	}
 	for _, res := range m.ExcludeResourceList {
 		gr := schema.ParseGroupResource(res)
